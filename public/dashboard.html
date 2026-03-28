@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ContentSignal</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <nav>
+    <a class="brand" href="/">ContentSignal</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/snippet">Get Snippet</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <div class="dashboard-container">
+    <h1>Attribution Dashboard</h1>
+    <p class="dash-sub">Revenue traced back to the content that earned it.</p>
+
+    <!-- Section A: Revenue by Content Source -->
+    <div class="section-title">Revenue by Content Source</div>
+    <div class="dash-table-wrapper">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Source / Landing Page</th>
+            <th>Visitors</th>
+            <th>Trials</th>
+            <th>Paid</th>
+            <th>MRR ($)</th>
+            <th>Trial&rarr;Paid %</th>
+          </tr>
+        </thead>
+        <tbody id="source-table-body">
+          <tr><td colspan="6" style="padding:1.5rem;color:#94a3b8;">Loading&hellip;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section B: Recent Conversions Feed -->
+    <div class="section-title">Recent Conversions</div>
+    <ul class="feed-list" id="conversions-feed">
+      <li style="padding:1rem;color:#94a3b8;">Loading&hellip;</li>
+    </ul>
+  </div>
+
+  <footer>
+    &copy; 2026 ContentSignal &mdash; Built for indie SaaS founders.
+  </footer>
+
+  <script>
+    function formatMrr(val) {
+      return '$' + parseFloat(val).toFixed(2);
+    }
+
+    function convRate(trials, paid) {
+      if (!trials) return '0%';
+      return ((paid / trials) * 100).toFixed(1) + '%';
+    }
+
+    fetch('/api/dashboard-data')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        // Render source table
+        var tbody = document.getElementById('source-table-body');
+        if (!data.rows || data.rows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="padding:1.5rem;color:#94a3b8;">No data yet.</td></tr>';
+        } else {
+          tbody.innerHTML = data.rows.map(function(row) {
+            return '<tr>' +
+              '<td>' + escHtml(row.source) + '</td>' +
+              '<td>' + row.visitors + '</td>' +
+              '<td>' + row.trials + '</td>' +
+              '<td>' + row.paid + '</td>' +
+              '<td class="mrr-val">' + formatMrr(row.mrr) + '</td>' +
+              '<td class="conv-rate">' + convRate(row.trials, row.paid) + '</td>' +
+              '</tr>';
+          }).join('');
+        }
+
+        // Render conversions feed
+        var feed = document.getElementById('conversions-feed');
+        if (!data.feed || data.feed.length === 0) {
+          feed.innerHTML = '<li style="padding:1rem;color:#94a3b8;">No conversions yet.</li>';
+        } else {
+          feed.innerHTML = data.feed.map(function(c) {
+            return '<li class="feed-item">' +
+              '<span class="feed-email">' + escHtml(c.email) + '</span>' +
+              '<span class="feed-source">' + escHtml(c.source) + '</span>' +
+              '<span class="feed-landing">' + escHtml(c.landing) + '</span>' +
+              '<span class="feed-plan">' + escHtml(c.plan) + '</span>' +
+              '<span class="feed-mrr">' + formatMrr(c.mrr) + '/mo</span>' +
+              '</li>';
+          }).join('');
+        }
+      })
+      .catch(function(err) {
+        console.error('Dashboard fetch error:', err);
+      });
+
+    function escHtml(str) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(str || ''));
+      return d.innerHTML;
+    }
+  </script>
+
+</body>
+</html>
