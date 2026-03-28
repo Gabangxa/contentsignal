@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Snippet — ContentSignal</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <nav>
+    <a class="brand" href="/">ContentSignal</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/snippet">Get Snippet</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h1>Get Your Tracking Snippet</h1>
+    <p class="sub">Enter your domain to generate your personalised tracking snippet. Paste it in the <code>&lt;head&gt;</code> of every page on your site or blog.</p>
+
+    <div class="form-group">
+      <label for="domain-input">Your domain</label>
+      <input type="text" id="domain-input" placeholder="e.g. myapp.com" autocomplete="off" />
+    </div>
+    <button class="btn-primary" id="generate-btn">Generate Snippet</button>
+
+    <div class="snippet-output" id="snippet-output">
+      <h3>Your snippet</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-btn" id="copy-btn">Copy</button>
+        <pre id="snippet-code"></pre>
+      </div>
+      <div class="instruction-note">
+        Paste this snippet inside the <code>&lt;head&gt;</code> tag of every page on your site or blog. It runs silently and captures attribution data on each visit.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2026 ContentSignal &mdash; Built for indie SaaS founders.
+  </footer>
+
+  <script>
+    var generateBtn = document.getElementById('generate-btn');
+    var snippetOutput = document.getElementById('snippet-output');
+    var snippetCode = document.getElementById('snippet-code');
+    var copyBtn = document.getElementById('copy-btn');
+    var domainInput = document.getElementById('domain-input');
+
+    generateBtn.addEventListener('click', function () {
+      var domain = domainInput.value.trim() || 'yourdomain.com';
+      var snippet = '<script>\n' +
+        '  (function() {\n' +
+        '    var u = new URLSearchParams(window.location.search);\n' +
+        '    var d = {\n' +
+        '      src: u.get(\'utm_source\') || document.referrer || \'direct\',\n' +
+        '      medium: u.get(\'utm_medium\') || \'\',\n' +
+        '      campaign: u.get(\'utm_campaign\') || \'\',\n' +
+        '      content: u.get(\'utm_content\') || \'\',\n' +
+        '      landing: window.location.pathname,\n' +
+        '      ts: Date.now()\n' +
+        '    };\n' +
+        '    localStorage.setItem(\'_cs_attr\', JSON.stringify(d));\n' +
+        '    fetch(\'https://' + domain + '/api/track\', {\n' +
+        '      method: \'POST\',\n' +
+        '      headers: {\'Content-Type\':\'application/json\'},\n' +
+        '      body: JSON.stringify(d)\n' +
+        '    }).catch(function(){});\n' +
+        '  })();\n' +
+        '<\/script>';
+
+      snippetCode.textContent = snippet;
+      snippetOutput.style.display = 'block';
+      snippetOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    copyBtn.addEventListener('click', function () {
+      var text = snippetCode.textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+      }).catch(function () {
+        // Fallback for older browsers
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+      });
+    });
+
+    // Allow Enter key on input
+    domainInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') generateBtn.click();
+    });
+  </script>
+
+</body>
+</html>
