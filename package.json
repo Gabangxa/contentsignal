@@ -1,0 +1,12 @@
+{
+  "name": "contentsignal",
+  "version": "1.0.0",
+  "description": "Blog-to-revenue attribution for indie SaaS founders",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
